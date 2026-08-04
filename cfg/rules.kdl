@@ -1,0 +1,59 @@
+    window-rule {
+        geometry-corner-radius 20 // Set every window radius to 20
+        clip-to-geometry true
+    }
+
+     // if you use steam you will probably like these
+    window-rule {
+        match app-id="steam"
+        exclude title=r#"^[Ss]team$"#
+        open-floating true
+    }
+
+    window-rule {
+       match app-id="steam" title=r#"^notificationtoasts_\d+_desktop$"#
+       default-floating-position x=10 y=10 relative-to="bottom-right"
+       open-focused false
+    }
+
+    // apps que abrem sempre flutuando
+    window-rule {
+        match app-id=r#"^org\.gnome\.Loupe$"#
+        open-floating true
+        default-column-width { proportion 0.5; }
+        default-window-height { proportion 0.8; }
+    }
+
+    window-rule {
+        match app-id=r#"^org\.gnome\.gitlab\.somas\.Apostrophe$"#
+        open-floating true
+    }
+
+    // Emulador do Android: Qt em XWayland, abre 2+ janelas com o mesmo app-id
+    // (device, barra de controles, extended controls), distinguíveis pelo título.
+
+    // A janela do device FICA NO TILING. O niri respeita o size hint dela, então
+    // ela nunca é esticada: recebe um tile do tamanho natural (ex.: 410x912 num
+    // AVD 1080x2400, onde uma janela normal pegaria 1696x1378). Como é tilada,
+    // não cobre nada. Sem tamanho na regra de propósito — o emulador calcula o
+    // dele pela resolução do AVD e guarda por device em
+    // .android/avd/<nome>.avd/emulator-user.ini; chumbar aqui quebraria tablet,
+    // foldable, Wear OS redondo etc.
+    window-rule {
+        match app-id=r#"^Emulator$"# title=r#"^Android Emulator"#
+        open-floating false
+    }
+
+    // As auxiliares flutuam: são de tamanho fixo e se posicionam em coordenada
+    // X11, que atravessa os dois monitores. Flutuando ficam presas ao workspace
+    // onde nasceram, o que corta o vazamento pra outra tela.
+    window-rule {
+        match app-id=r#"^Emulator$"#
+        exclude title=r#"^Android Emulator"#
+        open-floating true
+    }
+
+    layer-rule {
+        match namespace="^noctalia-wallpaper*"
+        place-within-backdrop true
+    }

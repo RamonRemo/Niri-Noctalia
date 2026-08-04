@@ -1,0 +1,13 @@
+// ────────────── Startup Applications ──────────────
+// https://github.com/YaLTeR/niri/wiki/Configuration:-Miscellaneous#spawn-sh-at-startup
+
+    spawn-sh-at-startup "qs -c noctalia-shell"
+
+    // Trava a tela assim que o shell do noctalia responder ao IPC.
+    // Tentativas limitadas (~30s) pra nao ficar em loop se o qs nao subir.
+    spawn-sh-at-startup "for i in $(seq 60); do qs -c noctalia-shell ipc call lockScreen lock && break; sleep 0.5; done"
+    spawn-sh-at-startup "niri msg action focus-monitor DP-2"
+    spawn-sh-at-startup "udiskie --automount --notify --no-tray"
+
+    // Recarrega a config quando o noctalia regenera as cores (noctalia.kdl).
+    spawn-at-startup "/home/remo/.local/bin/niri-noctalia-reload"
