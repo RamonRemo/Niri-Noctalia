@@ -9,6 +9,8 @@
 # - [idle] do screensaver da OLED.
 # - [calendar.account.personal_google]: exige login, refaça pela UI.
 # - avatar_path: aponta pra um arquivo do desktop.
+# - Plugin gamer-mode e templates de tema do VSCode, Godot e Discord: são do
+#   uso do Remo, não do sistema.
 
 [audio]
 enable_sounds = false
@@ -33,7 +35,7 @@ radius_bottom_right = 16
 scale = 1.05
 shadow = false
 show_on_workspace_switch = false
-start = [ "workspaces", "spacer_2", "gamermode", "bar", "tray" ]
+start = [ "workspaces", "spacer_2", "bar", "tray" ]
 thickness = 32
 widget_spacing = 13
 
@@ -86,7 +88,7 @@ paper_opacity = 0.96
 theme_colors = true
 
 [plugins]
-enabled = [ "noctalia/notes", "dunarand/bookmarks", "remo/noctes", "nomadcxx/gamer-mode" ]
+enabled = [ "noctalia/notes", "dunarand/bookmarks", "remo/noctes" ]
 
     [[plugins.source]]
     kind = "git"
@@ -118,7 +120,7 @@ wallpaper_scheme = "m3-content"
 
     [theme.templates]
     builtin_ids = [ "gtk3", "gtk4", "kitty", "niri" ]
-    community_ids = [ "vscode", "godot", "discord" ]
+    community_ids = [ ]
 
 [wallpaper]
 directory = "/home/remo/Imagens/Wallpapers"
@@ -133,9 +135,6 @@ type = "dunarand/bookmarks:bar"
 
 [widget.clock]
 format = "{:%H:%M %a %d %b}"
-
-[widget.gamermode]
-type = "nomadcxx/gamer-mode:gamermode"
 
 [widget.notes]
 type = "noctalia/notes:notes"

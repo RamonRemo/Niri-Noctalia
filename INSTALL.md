@@ -1,16 +1,17 @@
-# Guia de instalação: notebook igual ao desktop
+# Guia de instalação: notebook com o setup do desktop
 
-Guia pro Claude Code do notebook deixar o CachyOS Niri (+Noctalia) parecido com o desktop do Remo. Escrito em 17/10/2026 a partir do desktop.
+Guia pro Claude Code do notebook deixar o CachyOS Niri (+Noctalia) com a cara e a praticidade do desktop do Remo. Escrito em 17/10/2026.
+
+**O notebook é da namorada do Remo, não dele.** O objetivo é trazer o que deixa o sistema gostoso e prático (visual, atalhos, apps do dia a dia como o Apostrophe), e não o que é pessoal dele: jogos, programação, engines, Discord e afins. Quem conduz a instalação é o Remo.
 
 Arquivos de apoio neste repo:
 
 - `cfg/`, `config.kdl`: config do niri do desktop.
 - `bin/`: scripts que os atalhos e o autostart chamam.
-- `systemd/user/`: unidade que faz o prompt do starship seguir o tema.
-- `dotfiles/`: kitty, ghostty, fish, recorte da noctalia, bookmarks, CLAUDE.md.
-- `extras/omacalc/`: calculadora do Omarchy (binário, atalho e ícone).
+- `systemd/user/`: unidade que faz o prompt do terminal seguir o tema.
+- `dotfiles/`: kitty, fish, recorte das configs da noctalia e bookmarks.
+- `extras/omacalc/`: calculadora (binário, atalho e ícone).
 - `AUTOLOGIN.md`: o porquê do autologin e do keyring sem senha.
-- `PROGRAMAS.md`: de onde veio cada programa e quanto é usado.
 
 ## Regras pro Claude
 
@@ -27,7 +28,8 @@ Leia antes de executar qualquer coisa.
    3. O que o Remo precisa fazer (instalar, logar, clicar), numerado.
    4. Decisões que só o Remo pode tomar.
 7. **Git:** neste repo, nada de commit ou push sem OK do Remo na hora. Nunca adicione o trailer `Co-Authored-By`.
-8. **Idioma:** o Remo escreve em pt-BR. Responda em pt-BR, curto e direto.
+8. **Idioma:** pt-BR, curto e direto.
+9. **Na dúvida se algo é "do Remo" ou "do sistema", pergunte** em vez de instalar.
 
 O que o Remo chama de "ninja" é o **Sushi**, o preview do Nautilus na tecla Espaço. O pacote `ninja` é um build system e não tem nada a ver.
 
@@ -35,23 +37,25 @@ O que o Remo chama de "ninja" é o **Sushi**, o preview do Nautilus na tecla Esp
 
 ### Perguntas pro Remo (de uma vez só, antes de tudo)
 
-1. Instalar as ferramentas de desenvolvimento (VSCode, Flutter, Android Studio, Godot, Docker)?
-2. Instalar jogos (Steam, Faugus)?
-3. Quer o autologin direto na tela de bloqueio da noctalia (`AUTOLOGIN.md`)?
-4. Quer trazer os wallpapers e o gif do terminal do desktop? Se sim, ele copia por LocalSend ou pendrive pra `~/Imagens/Wallpapers` e `~/Downloads/giphy.gif`.
+1. Ela usa WhatsApp no computador? Se sim, entra o Whatsie (Super+Shift+B).
+2. Quer o Chrome além do Zen?
+3. Quer o Bitwarden (gerenciador de senhas)?
+4. Quer o autologin direto na tela de bloqueio da noctalia (`AUTOLOGIN.md`)?
+5. Wallpapers: os do Remo (copiados do desktop por LocalSend ou pendrive) ou os dela?
+6. Gif animado na abertura do terminal (o `giffetch`)? Precisa do arquivo `giphy.gif` do desktop.
 
 ### Checagem (só leitura, você faz)
 
 | O quê | Comando | Por quê |
 |---|---|---|
-| Usuário | `id -un` | Os arquivos assumem `remo` e `/home/remo`. Se for outro nome, troque nos arquivos copiados. |
+| Usuário | `id -un` e `echo $HOME` | Os arquivos do repo têm `/home/remo` escrito. Na fase 2 você troca pelo `$HOME` do notebook. |
 | Disco criptografado | `lsblk -f` | Procure `crypto_LUKS`. Sem LUKS, o keyring **não** pode ficar sem senha (fase 5). |
 | Tela | `niri msg outputs` | Nome (`eDP-1`?), resolução e escala. Serve pra fase 6. |
 | Internet | `ping -c1 archlinux.org` | Se não responder, o Remo conecta o Wi-Fi pelo painel da noctalia ou pelo `nmtui`. |
-| AUR helper | `command -v yay paru` | O script da fase 1 usa `yay`; se não houver, ele instala pelo repo `cachyos`. |
-| Zen | `pacman -Q zen-browser-bin` e `flatpak list --app` | No desktop é flatpak. No notebook o flatpak falhou e o Zen foi pelo pacman. O atalho e o navegador padrão mudam conforme a versão. |
-| Pastas do usuário | `xdg-user-dir DESKTOP` e `xdg-user-dir PICTURES` | O atalho Mod+E abre `~/Área de trabalho`. Capturas vão pra `~/Imagens/Capturas`. Se as pastas tiverem nome em inglês, ajuste. |
-| Teclado | `localectl status` | O desktop é `br-abnt2` e o niri não força layout. Se o notebook for outro teclado, pergunte ao Remo. |
+| AUR helper | `command -v yay paru` | O script da fase 1 usa o `yay`; se não houver, ele instala pelo repo `cachyos`. |
+| Zen | `pacman -Q zen-browser-bin` e `flatpak list --app` | No desktop é flatpak. No notebook o Zen foi pelo pacman. O atalho e o navegador padrão mudam conforme a versão. |
+| Pastas do usuário | `xdg-user-dir DESKTOP` e `xdg-user-dir PICTURES` | O atalho Super+E abre a Área de trabalho. Capturas vão pra `Imagens/Capturas`. Se as pastas tiverem nome em inglês, ajuste. |
+| Teclado | `localectl status` | O desktop é `br-abnt2` e o niri não força layout. Se ela digitar e sair caractere errado, pergunte ao Remo qual é o teclado. |
 
 Clone o repo fora do `~/.config/niri`:
 
@@ -61,6 +65,24 @@ git clone https://github.com/RamonRemo/Niri-Noctalia.git ~/Niri-Noctalia
 
 ## Fase 1: pacotes (script, o Remo roda)
 
+O que entra e por quê:
+
+| Pacote | Pra quê |
+|---|---|
+| `kitty`, `ttf-meslo-nerd`, `starship`, `fastfetch` | Terminal do Super+Enter, fonte com ícones, prompt colorido seguindo o tema. |
+| `sushi` | Preview do Nautilus na tecla Espaço. |
+| `loupe`, `mpv` | Imagens e vídeos. |
+| `apostrophe` | Editor de txt e md, padrão pra esses arquivos. |
+| `zen-browser-bin` | Navegador padrão. |
+| `localsend` | Mandar arquivo entre celular e computador sem cabo. |
+| `udiskie` | Monta pendrive e HD externo sozinho. |
+| `papirus-icon-theme`, `papirus-folders`, `bibata-cursor-theme-bin` | Ícones, pastas na cor do tema e o ponteiro do desktop. |
+| `nirimod-git` | Configurar o niri por interface, sem editar arquivo. |
+| `pacseek` | Procurar e instalar programas pelo terminal. |
+| `qt6-declarative` | Necessário pra calculadora (omacalc). |
+| `libnotify`, `jq` | Usados pelos scripts dos atalhos. |
+| `btop`, `micro` | Monitor do sistema e editor simples no terminal. |
+
 Monte `~/setup/fase-1.sh` com base no modelo abaixo. Ligue as variáveis conforme as respostas da fase 0. Se a checagem mostrou erro de mirror, ligue `MIRRORS=sim`.
 
 ```bash
@@ -68,8 +90,11 @@ Monte `~/setup/fase-1.sh` com base no modelo abaixo. Ligue as variáveis conform
 # Fase 1: pacotes. Rodar como usuário normal; pede a senha do sudo.
 set -u
 MIRRORS=nao     # sim = reordena os mirrors antes (erro 404/timeout)
-DEV=nao         # sim = VSCode, Flutter, Android Studio, Godot, Docker
-JOGOS=nao       # sim = Steam, Faugus
+WHATSAPP=nao    # sim = Whatsie (flatpak)
+CHROME=nao      # sim = Google Chrome (AUR)
+BITWARDEN=nao   # sim = Bitwarden
+AUTOLOGIN=nao   # sim = Seahorse, pra deixar o keyring sem senha (fase 5)
+GIF=nao         # sim = imagemagick, usado pelo giffetch
 
 mkdir -p ~/setup
 LOG=~/setup/fase-1.log
@@ -103,26 +128,23 @@ aur() {
 
 passo "Atualizar sistema" sudo pacman -Syu --noconfirm
 
-repo "Repos oficiais" \
-  kitty ghostty ttf-meslo-nerd starship fastfetch imagemagick \
-  sushi loupe mpv apostrophe zen-browser-bin \
-  seahorse bitwarden discord vesktop-bin localsend \
-  udiskie gpu-screen-recorder papirus-icon-theme libnotify qt6-declarative \
-  jq ripgrep fd github-cli btop micro just flatpak yay
+repo "Base" \
+  kitty ttf-meslo-nerd starship fastfetch \
+  sushi loupe mpv apostrophe zen-browser-bin localsend \
+  udiskie papirus-icon-theme libnotify qt6-declarative \
+  jq btop micro yay
 
-aur google-chrome fluxer-canary-bin papirus-folders bibata-cursor-theme-bin \
-  nirimod-git pacseek
+aur papirus-folders bibata-cursor-theme-bin nirimod-git pacseek
 
-passo "Flathub" sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-passo "Whatsie" sudo flatpak install -y flathub com.ktechpit.whatsie
+[ "$BITWARDEN" = sim ] && repo "Bitwarden" bitwarden
+[ "$AUTOLOGIN" = sim ] && repo "Seahorse" seahorse
+[ "$GIF" = sim ] && repo "imagemagick" imagemagick
+[ "$CHROME" = sim ] && aur google-chrome
 
-if [ "$DEV" = sim ]; then
-  repo "Dev (repo)" godot nodejs pnpm docker
-  aur visual-studio-code-bin flutter-bin android-studio
-fi
-
-if [ "$JOGOS" = sim ]; then
-  repo "Jogos" steam faugus-launcher
+if [ "$WHATSAPP" = sim ]; then
+  repo "Flatpak" flatpak
+  passo "Flathub" sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+  passo "Whatsie" sudo flatpak install -y flathub com.ktechpit.whatsie
 fi
 
 echo
@@ -148,8 +170,8 @@ Fallbacks:
 | `failed retrieving file ... 404` | Base desatualizada. Rodar de novo com `MIRRORS=sim`. |
 | `signature is unknown trust` | Script curto com `sudo pacman -Sy archlinux-keyring cachyos-keyring` seguido de `sudo pacman -Syu`. Nunca `-Sy` sozinho seguido de `-S`. |
 | Conflito de pacote (`are in conflict`) | O `--noconfirm` recusa. Mostre o conflito ao Remo e deixe ele escolher. |
-| Flatpak falhou | Tudo tem alternativa no pacman, menos o Whatsie. Plano B do Whatsie: `chrome-janela web.whatsapp.com` (janela de app do Chrome). |
-| AUR falhou num pacote | Siga sem ele e reporte. `bibata-cursor-theme-bin` falhando: o cursor fica no padrão até resolver. |
+| Flatpak falhou | Plano B do WhatsApp: abrir `web.whatsapp.com` no navegador e fixar. |
+| AUR falhou num pacote | Siga sem ele e reporte. Sem o `bibata-cursor-theme-bin`, o ponteiro fica no padrão. |
 
 ## Fase 2: arquivos do usuário (você faz)
 
@@ -173,11 +195,21 @@ Ajustes obrigatórios no notebook:
 |---|---|---|
 | `keybinds.kdl` | `Mod+B ... spawn "flatpak" "run" "app.zen_browser.zen"` | Se o Zen for do pacman: `spawn "zen-browser"`. Confirme o binário com `pacman -Ql zen-browser-bin \| rg bin/`. |
 | `keybinds.kdl` | `Mod+N` e `Mod+Shift+N` (`nightlight-mono`, um por monitor) | Um só: `Mod+N repeat=false hotkey-overlay-title="Luz noturna" { spawn-sh "noctalia msg nightlight-force-toggle"; }`. Apague o `Mod+Shift+N`. |
-| `keybinds.kdl` | `Mod+M` (`audio-toggle`, fone Fuxi-H3 / OLED) | Apagar. |
-| `keybinds.kdl` | `Mod+Shift+O` (`oled-refresh`) | Apagar. |
-| `keybinds.kdl` | `Mod+Print` (`grava-tui`) | Manter só se instalar o grava-tela (fase 7). Senão, apagar. |
+| `keybinds.kdl` | `Mod+Shift+B` (Whatsie) | Apagar se ela não quis o WhatsApp. |
+| `keybinds.kdl` | `Mod+G` e `Mod+Shift+G` (Chrome) | Apagar se ela não quis o Chrome. |
+| `keybinds.kdl` | `Mod+M`, `Mod+Shift+O`, `Mod+Shift+S`, `Mod+Print` | Apagar. São de fone, OLED, screensaver e gravação de tela do desktop. |
 | `keybinds.kdl` | `Mod+E ... "/home/remo/Área de trabalho"` | Usar o caminho que `xdg-user-dir DESKTOP` devolveu. |
 | `autostart.kdl` | `niri msg action focus-monitor DP-1` | Apagar. |
+
+Troque o caminho do Remo pelo do notebook em tudo que foi copiado (fase 2 inteira e fase 3):
+
+```
+rg -l '/home/remo' ~/.config/niri ~/.local/bin ~/.config/kitty ~/.config/fish
+```
+
+Em cada arquivo listado: `sed -i "s|/home/remo|$HOME|g" <arquivo>`.
+
+Por último, confira se algum atalho ainda chama programa que não existe. Liste os `spawn` do `keybinds.kdl` e teste cada binário com `command -v`. O que não existir, apague o atalho.
 
 Valide e recarregue. O niri não observa arquivos incluídos, então salvar não basta:
 
@@ -191,39 +223,38 @@ niri msg action load-config-file
 
 ### Scripts e unidades
 
-- Copie `bin/*` pra `~/.local/bin/` e dê `chmod +x`.
+- Copie `bin/*` pra `~/.local/bin/` e dê `chmod +x`. Sem Chrome, pode pular o `chrome-janela`. Sem o gif, pode pular o `giffetch`.
 - Copie `systemd/user/*` pra `~/.config/systemd/user/`, depois rode `systemctl --user daemon-reload` e `systemctl --user enable --now noctalia-starship.path`.
 
 O que cada script faz:
 
 | Script | Quem chama | Função |
 |---|---|---|
-| `chrome-janela` | Mod+G, Mod+Shift+G | Uma janela do Chrome por página, sem abas. |
-| `niri-float-toggle`, `niri-float-daemon` | Mod+Shift+T, autostart | Modo "janela nova abre flutuante" por monitor. |
+| `niri-float-toggle`, `niri-float-daemon` | Super+Shift+T, autostart | Modo "janela nova abre flutuante" por monitor. |
 | `niri-sushi-center` | autostart | Mantém o preview do Sushi centralizado. |
 | `niri-noctalia-reload` | autostart | Recarrega o niri quando a noctalia regenera as cores e reinjeta o Alt+Tab. |
-| `omarchy-reminder`, `omarchy-notification-send` | Mod+F12 | Lembrete rápido via `systemd-run`. |
-| `noctalia-papirus-folders` | hook da noctalia | Cor das pastas do Papirus segue o acento. |
-| `noctalia-starship` | `noctalia-starship.path` | Prompt do starship segue o tema do kitty. |
-| `reiniciar-noctalia` | bookmark | Reinicia a noctalia destacada do painel. |
-| `giffetch` | fish no kitty | Gif animado + fastfetch na abertura do terminal. |
+| `omarchy-reminder`, `omarchy-notification-send` | Super+F12 | Lembrete rápido: "me avisa em X minutos". |
+| `noctalia-papirus-folders` | hook da noctalia | Cor das pastas segue o tema. |
+| `noctalia-starship` | `noctalia-starship.path` | Prompt do terminal segue o tema. |
+| `reiniciar-noctalia` | bookmark | Reinicia a noctalia se ela travar. |
+| `chrome-janela` | Super+G | Nova janela do Chrome (só com Chrome). |
+| `giffetch` | fish no kitty | Gif animado + infos na abertura do terminal (só com o gif). |
 
-### Omacalc
+### Calculadora (omacalc)
 
-Calculadora portada do Omarchy (licença MIT). Não existe no AUR: o binário está em `extras/omacalc/`. A regra que abre ela flutuante já está no `cfg/rules.kdl`.
+Portada do Omarchy (licença MIT). Não existe no AUR: o binário está em `extras/omacalc/`. A regra que abre ela flutuante já está no `cfg/rules.kdl`.
 
 - `extras/omacalc/omacalc` → `~/.local/bin/omacalc` (`chmod +x`).
 - `extras/omacalc/omacalc.desktop` → `~/.local/share/applications/`.
 - `extras/omacalc/omacalc.svg` → `~/.local/share/icons/hicolor/scalable/apps/`.
 
-Depende do Qt6 (`qt6-declarative`, que a fase 1 instala). Se não abrir, `ldd ~/.local/bin/omacalc | rg 'not found'` mostra qual biblioteca falta.
+Se não abrir, `ldd ~/.local/bin/omacalc | rg 'not found'` mostra qual biblioteca falta.
 
-### Terminais e shell
+### Terminal
 
 - `dotfiles/kitty/kitty.conf` → `~/.config/kitty/kitty.conf`. Fonte MesloLGS Nerd Font 13, 85% de opacidade, tema da noctalia.
-- `dotfiles/ghostty/config` → `~/.config/ghostty/config`.
-- `dotfiles/fish/config.fish` → `~/.config/fish/config.fish`. Se o Remo não quis o pacote de desenvolvimento, apague o bloco "Flutter / Android". O bloco do autologin é inofensivo sem o autologin: só age em login no tty1.
-- O desktop tem `export DISABLE_AUTOUPDATER=1` no fish, que desliga o auto-update do Claude Code. Não foi trazido. Pergunte ao Remo se quer.
+- `dotfiles/fish/config.fish` → `~/.config/fish/config.fish`. O bloco do autologin é inofensivo sem o autologin: só age em login no tty1.
+- Gif do `giffetch`: se o Remo trouxer, vai em `~/Downloads/giphy.gif`. Sem ele, o terminal mostra o fastfetch normal.
 
 ### Apostrophe, Loupe e Zen como padrão
 
@@ -284,11 +315,6 @@ O cursor precisa estar em quatro lugares. Mudar um só não pega em todo app.
    Inherits=Bibata-Modern-Ice
    ```
 
-### Claude Code
-
-- Copie `dotfiles/claude/CLAUDE.md` pra `~/.claude/CLAUDE.md`. Se já existir um, mostre a diferença ao Remo antes.
-- Plugins do desktop: `caveman@caveman`, `chrome-devtools-mcp`, `clangd-lsp`, `vercel` e `browser-use`. Os quatro últimos vêm do marketplace oficial. A instalação é pelo `/plugin` e é interativa, então fica com o Remo.
-
 ## Fase 3: noctalia (você faz)
 
 A noctalia reescreve o `~/.local/state/noctalia/settings.toml` enquanto roda. **Edição com ela viva se perde.**
@@ -298,7 +324,7 @@ A noctalia reescreve o `~/.local/state/noctalia/settings.toml` enquanto roda. **
    pkill -x noctalia
    ```
 2. Faça backup do `settings.toml`.
-3. Mescle `dotfiles/noctalia/settings-notebook.toml` no `settings.toml`. Seção que existe nos dois: a do repo vence. Seção que só existe no notebook: fica. O topo do arquivo do repo explica o que ficou de fora e por quê.
+3. Mescle `dotfiles/noctalia/settings-notebook.toml` no `settings.toml`. Seção que existe nos dois: a do repo vence. Seção que só existe no notebook: fica. O topo do arquivo do repo explica o que ficou de fora e por quê. Troque `/home/remo` pelo `$HOME` do notebook.
 4. Valide. Chave errada derruba a shell inteira:
    ```
    noctalia config validate ~/.local/state/noctalia/settings.toml
@@ -307,7 +333,7 @@ A noctalia reescreve o `~/.local/state/noctalia/settings.toml` enquanto roda. **
    ```
    niri msg action spawn -- noctalia
    ```
-6. Plugins. O `settings.toml` já lista as fontes (official e community) e os quatro habilitados: notes (Mod+A), bookmarks, **noctes** (post-it no desktop, que já está no community) e gamer-mode. Atualize as fontes e confira:
+6. Plugins. O `settings.toml` já lista as fontes (official e community) e os três habilitados: **notes** (anotações, Super+A), **bookmarks** (atalhos de comando na barra) e **noctes** (post-it na área de trabalho). Atualize as fontes e confira:
    ```
    noctalia msg plugins update community
    ```
@@ -318,13 +344,13 @@ A noctalia reescreve o `~/.local/state/noctalia/settings.toml` enquanto roda. **
    noctalia msg plugins list
    ```
    Se algum não estiver habilitado: `noctalia msg plugins enable <autor/plugin>`.
-7. Bookmarks. Depois que o plugin subiu uma vez, copie `dotfiles/noctalia/bookmarks.json` pra `~/.local/state/noctalia/plugins/data/dunarand/bookmarks/data.json` e reinicie a noctalia. Esse arquivo é legível por qualquer usuário: nunca coloque senha nele.
+7. Bookmarks. Depois que o plugin subiu uma vez, copie `dotfiles/noctalia/bookmarks.json` pra `~/.local/state/noctalia/plugins/data/dunarand/bookmarks/data.json`, troque o `/home/remo` e reinicie a noctalia. Esse arquivo é legível por qualquer usuário: nunca coloque senha nele.
 8. Gere os temas (kitty, GTK, borda do niri):
    ```
    noctalia msg templates-apply
    ```
    Confira se apareceram `~/.config/kitty/themes/noctalia.conf`, `~/.config/gtk-4.0/noctalia.css` e o `~/.config/niri/noctalia.kdl` preenchido. Depois rode `~/.local/bin/noctalia-starship` uma vez pra gerar o prompt.
-9. Post-its do noctes: o Remo cria pelo botão "Nova" no painel do plugin. Os do desktop não vêm junto.
+9. Post-its: ela cria pelo botão "Nova" no painel do noctes.
 
 Pra ver erro da noctalia (ela manda o log pro /dev/null):
 
@@ -334,14 +360,13 @@ pkill -x noctalia; nohup noctalia >/tmp/noctalia.log 2>&1 &
 
 ## Fase 4: root (script, o Remo roda)
 
-Monte `~/setup/fase-4.sh`. Ligue `AUTOLOGIN` e `DOCKER` conforme a fase 0. **Só ligue o autologin depois que o `config.fish` da fase 2 estiver no lugar.** Sem ele, o boot cai num prompt do fish no tty1. Nesse caso, digitar `niri-session` resolve.
+Monte `~/setup/fase-4.sh`. Ligue o `AUTOLOGIN` conforme a fase 0. **Só ligue o autologin depois que o `config.fish` da fase 2 estiver no lugar.** Sem ele, o boot cai num prompt do fish no tty1. Nesse caso, digitar `niri-session` resolve.
 
 ```bash
 #!/usr/bin/env bash
 # Fase 4: configuração de sistema. Rodar como usuário normal; pede a senha do sudo.
 set -u
 AUTOLOGIN=nao   # sim = autologin no tty1 e desliga o display manager
-DOCKER=nao      # sim = liga o docker e põe o usuário no grupo
 
 mkdir -p ~/setup
 LOG=~/setup/fase-4.log
@@ -349,7 +374,7 @@ exec > >(tee -a "$LOG") 2>&1
 falhas=()
 USUARIO=$(id -un)
 
-echo "==> papirus-folders sem senha (hook da noctalia)"
+echo "==> papirus-folders sem senha (cor das pastas segue o tema)"
 printf '%s ALL=(root) NOPASSWD: /usr/bin/papirus-folders\n' "$USUARIO" \
   | sudo tee /etc/sudoers.d/papirus-folders >/dev/null \
   && sudo chmod 440 /etc/sudoers.d/papirus-folders \
@@ -370,14 +395,9 @@ if [ "$AUTOLOGIN" = sim ]; then
   fi
 fi
 
-if [ "$DOCKER" = sim ]; then
-  echo "==> Docker"
-  sudo systemctl enable --now docker.service && sudo usermod -aG docker "$USUARIO" || falhas+=("docker")
-fi
-
 echo
 if [ ${#falhas[@]} -eq 0 ]; then
-  echo "== FASE 4 OK (reinicie pra valer o autologin e o grupo docker) =="
+  echo "== FASE 4 OK (reinicie pra valer o autologin) =="
 else
   echo "== FASE 4 COM FALHAS: ${falhas[*]} =="
 fi
@@ -391,16 +411,14 @@ bash ~/setup/fase-4.sh
 
 Entregue esta lista numerada, só com os itens que se aplicam:
 
-1. **Keyring "Login" sem senha**, só se a fase 0 achou LUKS (`AUTOLOGIN.md`, passo 5). Seahorse, seção "Senhas", botão direito em "Login", "Alterar senha", nova senha vazia. Sem LUKS, não fazer. Nesse caso o histórico do Super+V só grava depois de destravar o keyring.
-2. **Logins:** Zen (conta Firefox pra sincronizar), Chrome, Bitwarden, Whatsie (QR code), Vesktop, Fluxer.
-3. **GitHub:** `gh auth login`. O desktop força SSH no lugar do HTTPS com `url.insteadOf`. Só configure isso depois que existir uma chave SSH cadastrada, senão todo `git clone` quebra.
-4. **Noctalia pela UI:** avatar, conta do Google no calendário, wallpaper.
-5. **Arquivos do desktop:** wallpapers em `~/Imagens/Wallpapers` (a troca automática a cada 15 min depende disso) e `~/Downloads/giphy.gif` (sem ele, o kitty mostra o fastfetch normal).
-6. **Plugins do Claude Code** pelo `/plugin` (lista na fase 2).
+1. **Keyring "Login" sem senha**, só com autologin e só se a fase 0 achou LUKS (`AUTOLOGIN.md`, passo 5). Seahorse, seção "Senhas", botão direito em "Login", "Alterar senha", nova senha vazia. Sem LUKS, não fazer. Nesse caso o histórico do Super+V só grava depois de destravar o keyring.
+2. **Logins dela:** Zen (conta Firefox, se ela tiver), Chrome, Bitwarden, Whatsie (QR code).
+3. **Noctalia pela UI:** foto de perfil, conta do Google no calendário (se ela quiser), wallpaper.
+4. **Wallpapers** em `~/Imagens/Wallpapers`. A troca automática a cada 15 minutos depende de ter imagem lá.
 
 ## Fase 6: só no notebook, só se precisar
 
-Aplique apenas se o Remo reclamar de janela cortando ou estourando, como na tela de configurações da noctalia. Um ajuste por vez, testando entre eles. No desktop nada disso existe.
+Aplique apenas se aparecer janela cortando ou estourando, como na tela de configurações da noctalia. Um ajuste por vez, testando entre eles. No desktop nada disso existe.
 
 O niri entrega a altura certa: o corte acontece dentro do app quando sobra pouca altura lógica (altura da tela ÷ escala, menos a barra e os gaps).
 
@@ -420,20 +438,21 @@ O niri entrega a altura certa: o corte acontece dentro do app quando sobra pouca
 
 Depois de cada um: `niri msg action load-config-file`.
 
-## Fase 7: opcionais
+## Não levar
 
-- **grava-tela** (Mod+Print): `git clone https://github.com/RamonRemo/grava-tela.git ~/Projetos/gravatui`, depois symlink de `~/Projetos/gravatui/gravatui.py` pra `~/.local/bin/grava-tui`. Usa o `gpu-screen-recorder`, que a fase 1 já instala.
-- **netgraph** (speedtest em TUI): `git clone https://github.com/RamonRemo/netgraph.git ~/Projetos/netgraph`. Siga o README.
-- **VSCode seguindo o tema:** o template `vscode` já está ligado no recorte da noctalia. Falta a extensão `noctaliatheme` no VSCode.
-- **Flutter:** se o build reclamar de `major version 69`, o Gradle pegou o Java 25 que vem com o Android Studio. Aponte pro Java 21 com `flutter config --jdk-dir <caminho do JDK 21>`.
+Coisas do Remo, não do sistema:
 
-## Não levar (só faz sentido no desktop)
+- Jogos (Steam, Faugus), programação (VSCode, Flutter, Android Studio, Godot, Docker, Node), Discord, Vesktop, Fluxer, Ghostty, GitHub CLI.
+- Plugin gamer-mode da noctalia e os templates de tema do VSCode, Godot e Discord.
+- Config e plugins do Claude Code do desktop.
+- Projetos dele: grava-tela, netgraph, screensaver-oled.
+
+Coisas que só fazem sentido no hardware do desktop:
 
 - `cfg/display.kdl` (OLED no DP-1 e ultrawide no DP-2).
-- `nightlight-mono`, `audio-toggle`, `oled-refresh`, `screensaver-oled` e o `[idle]` do screensaver.
+- `nightlight-mono`, `audio-toggle`, `oled-refresh`, `screensaver-agora` e o `[idle]` do screensaver.
 - Serviços `mic-guard`, `oled-audio-guard`, `screensaver-oled-caffeine` e `amdgpu-pin-mclk`.
-- Bookmarks de backup no SSD 860 EVO e de monitor replica/estende.
-- Regra do udiskie que ignora o disco do Omarchy (o disco nem existe mais).
+- Bookmarks de backup no SSD e de monitor replica/estende.
 
 ## Problemas conhecidos
 
@@ -449,6 +468,5 @@ Depois de cada um: `niri msg action load-config-file`.
 | Prompt sem cor | `starship.toml` ainda não gerado | `~/.local/bin/noctalia-starship` |
 | Nautilus não muda de cor ou de ícone | Nautilus fica rodando em segundo plano | `nautilus -q` e reabrir |
 | Pastas do Papirus não mudam de cor | Falta a regra do sudoers, ou o acento é azul (parece igual ao padrão) | Conferir `/etc/sudoers.d/papirus-folders`; testar com wallpaper de cor forte |
-| Atalho não faz nada | Script ausente em `~/.local/bin` ou programa não instalado | `niri msg action spawn -- <comando>` mostra o erro |
+| Atalho não faz nada | Script com `/home/remo` errado, ou programa não instalado | `niri msg action spawn -- <comando>` mostra o erro |
 | Tela de configuração cortada | Pouca altura lógica | Fase 6 |
-| Compartilhar tela no Discord não funciona | Suspenso no Brasil pela ANPD desde 17/08/2026 | Não é bug e trocar de cliente não resolve |

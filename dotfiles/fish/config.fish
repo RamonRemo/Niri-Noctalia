@@ -2,18 +2,6 @@ source /usr/share/cachyos-fish-config/cachyos-config.fish
 
 fish_add_path ~/.local/bin
 
-# Binarios instalados via `go install` caem em $GOPATH/bin (~/go/bin).
-# fish_add_path e idempotente: nao duplica se ja estiver no PATH.
-fish_add_path ~/go/bin
-
-# ─── Flutter / Android (so se instalar o Flutter) ───
-# SDK do Android no home (e nao em /opt) para o sdkmanager escrever sem root.
-# O Gradle e o flutter doctor localizam o SDK por esta variavel.
-set -gx ANDROID_HOME ~/Android/Sdk
-# platform-tools antes do /usr/bin de proposito: o adb do SDK ganha do adb do
-# pacote android-tools, e o Flutter nao reclama de versao divergente.
-fish_add_path $ANDROID_HOME/platform-tools $ANDROID_HOME/cmdline-tools/latest/bin
-
 # autologin: sobe o niri automaticamente ao logar no tty1.
 # Sem `exec` de proposito: se o niri morrer, voce cai num prompt fish
 # em vez de entrar em loop de login.
