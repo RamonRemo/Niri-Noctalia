@@ -1,0 +1,46 @@
+#!/bin/sh
+# Abre uma janela do Chrome por página, no lugar de abas — quem faz o papel da
+# barra de abas é o niri (cada janela vira uma coluna).
+#
+# Modos:
+#   chrome-janela              janela normal: tem barra de URL, uma aba só.
+#   chrome-janela <url|busca>  janela --app: sem barra de URL, sem tab strip.
+#   chrome-janela -i           pergunta a URL/busca e abre no modo --app.
+#
+# Usa o perfil padrão do Chrome de propósito. A segunda chamada anexa na
+# instância que já está rodando, então compartilha o processo browser e o da
+# GPU. Um --user-data-dir separado duplicaria os dois (~300-500 MB só de base).
+#
+# O --ozone-platform-hint só tem efeito na chamada que sobe o Chrome do zero;
+# nas seguintes o processo existente ignora qualquer flag de linha de comando.
+
+set -eu
+
+CHROME=google-chrome-stable
+HINT=--ozone-platform-hint=auto
+
+busca() {
+    printf 'https://www.google.com/search?q=%s' "$(printf '%s' "$1" | jq -sRr @uri)"
+}
+
+if [ "${1-}" = "-i" ]; then
+    printf 'URL ou busca: '
+    read -r entrada || exit 0
+    [ -n "$entrada" ] || exit 0
+    set -- "$entrada"
+fi
+
+if [ $# -eq 0 ]; then
+    exec "$CHROME" "$HINT" --new-window
+fi
+
+alvo=$*
+
+case "$alvo" in
+    *://*)   url=$alvo ;;
+    *\ *)    url=$(busca "$alvo") ;;   # tem espaço: é busca, não domínio
+    *.*)     url="https://$alvo" ;;
+    *)       url=$(busca "$alvo") ;;
+esac
+
+exec "$CHROME" "$HINT" --app="$url"

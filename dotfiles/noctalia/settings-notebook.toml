@@ -1,0 +1,147 @@
+# Recorte do ~/.local/state/noctalia/settings.toml do desktop, só com o que
+# faz sentido numa máquina de uma tela. Não copie por cima do settings.toml do
+# notebook: mescle seção por seção (ver INSTALL.md, fase 5).
+#
+# Fora daqui de propósito:
+# - [desktop_widgets]: post-its e widgets presos aos outputs DP-1/DP-2.
+# - [lockscreen], [notification], [osd]: no desktop apontam pra DP-1/DP-2.
+#   No notebook ficam no padrão (todas as telas).
+# - [idle] do screensaver da OLED.
+# - [calendar.account.personal_google]: exige login, refaça pela UI.
+# - avatar_path: aponta pra um arquivo do desktop.
+
+[audio]
+enable_sounds = false
+
+# Barra de cima do desktop (a do ultrawide, DP-2): [bar.default] com os
+# overrides do DP-2 já aplicados. A do DP-1 fica na esquerda com auto-hide e
+# não entra aqui.
+[bar.default]
+background_opacity = 0.6
+capsule_border = "primary"
+capsule_border_width = 5.0
+capsule_padding = 9.0
+capsule_thickness = 0.82
+center = [ "clock", "spacer_3", "weather" ]
+end = [ "volume", "notes", "wallpaper", "notifications", "session" ]
+font_weight = 700
+margin_ends = 0
+padding = 12
+radius = 0
+radius_bottom_left = 16
+radius_bottom_right = 16
+scale = 1.05
+shadow = false
+show_on_workspace_switch = false
+start = [ "workspaces", "spacer_2", "gamermode", "bar", "tray" ]
+thickness = 32
+widget_spacing = 13
+
+[calendar]
+enabled = true
+
+# No desktop "power" também fica escondido. No notebook a aba de energia
+# (bateria, perfil de energia) serve, então só "monitor" sai.
+[control_center]
+hidden_tabs = [ "monitor" ]
+
+[dock]
+background_opacity = 0.52
+cross_axis_padding = 9
+icon_size = 33
+main_axis_padding = 18
+margin_edge = 4
+radius = 18
+
+# Cor das pastas do Papirus segue o acento. Precisa do script em
+# ~/.local/bin e da regra NOPASSWD do papirus-folders (INSTALL.md, fase 4).
+[hooks]
+colors_changed = [ "sh -c \"sleep 0.4; $HOME/.local/bin/noctalia-papirus-folders apply\"" ]
+started = [ "sh -c \"sleep 1.0; $HOME/.local/bin/noctalia-papirus-folders apply\"" ]
+
+[idle]
+behavior_order = [ "screen-off", "lock", "lock-and-suspend" ]
+
+    [idle.behavior.lock]
+    action = "lock"
+    enabled = true
+    timeout = 600.0
+
+    [idle.behavior.lock-and-suspend]
+    action = "lock_and_suspend"
+    enabled = true
+    timeout = 900.0
+
+    [idle.behavior.screen-off]
+    action = "screen_off"
+    enabled = true
+    timeout = 300.0
+
+[location]
+auto_locate = true
+
+[plugin_settings."remo/noctes"]
+panel_position = "center"
+paper_opacity = 0.96
+theme_colors = true
+
+[plugins]
+enabled = [ "noctalia/notes", "dunarand/bookmarks", "remo/noctes", "nomadcxx/gamer-mode" ]
+
+    [[plugins.source]]
+    kind = "git"
+    location = "https://github.com/noctalia-dev/official-plugins"
+    name = "official"
+
+    [[plugins.source]]
+    kind = "git"
+    location = "https://github.com/noctalia-dev/community-plugins"
+    name = "community"
+
+[shell]
+clipboard_enabled = true
+clipboard_history_max_entries = 200
+screen_time_enabled = true
+
+    [shell.screenshot]
+    annotate = true
+    directory = "~/Imagens/Capturas"
+    filename_pattern = "Captura %Y-%m-%d %H-%M-%S"
+
+[theme]
+builtin = "Catppuccin"
+community_palette = "Oxocarbon"
+mode = "dark"
+shell_mode = "dark"
+source = "wallpaper"
+wallpaper_scheme = "m3-content"
+
+    [theme.templates]
+    builtin_ids = [ "gtk3", "gtk4", "kitty", "niri" ]
+    community_ids = [ "vscode", "godot", "discord" ]
+
+[wallpaper]
+directory = "/home/remo/Imagens/Wallpapers"
+
+    [wallpaper.automation]
+    enabled = true
+    interval_seconds = 900
+
+[widget.bar]
+text = ""
+type = "dunarand/bookmarks:bar"
+
+[widget.clock]
+format = "{:%H:%M %a %d %b}"
+
+[widget.gamermode]
+type = "nomadcxx/gamer-mode:gamermode"
+
+[widget.notes]
+type = "noctalia/notes:notes"
+
+[widget.spacer_2]
+type = "spacer"
+
+[widget.spacer_3]
+type = "spacer"

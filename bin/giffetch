@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# giffetch - gif animado (pixels reais via kitty) + infos do fastfetch ao lado.
+# uso: giffetch [caminho.gif] [largura_em_cels]
+#   ex: giffetch ~/Downloads/giphy.gif 30
+set -uo pipefail
+
+GIF="${1:-$HOME/Downloads/giphy.gif}"
+W="${2:-40}"          # largura da imagem em colunas (cels)
+GAP=3                 # espaco entre imagem e texto
+
+# precisa do kitty (icat) e de estar num terminal kitty
+if ! command -v kitten >/dev/null 2>&1; then
+    echo "giffetch: 'kitten' nao encontrado (precisa do kitty)." >&2; exit 1
+fi
+if [[ -z "${KITTY_WINDOW_ID:-}" ]]; then
+    echo "giffetch: rode dentro do kitty (nao detectei KITTY_WINDOW_ID)." >&2; exit 1
+fi
+if [[ ! -f "$GIF" ]]; then
+    echo "giffetch: gif nao encontrado: $GIF" >&2; exit 1
+fi
+
+# altura em cels a partir da proporcao do gif (cel e ~2x mais alta que larga)
+imgW=1; imgH=1
+if command -v identify >/dev/null 2>&1; then
+    read -r imgW imgH < <(identify -format '%w %h' "${GIF}[0]" 2>/dev/null || echo "1 1")
+fi
+H=$(( (W * imgH + imgW) / (2 * imgW) ))
+(( H < 1 )) && H=1
+
+# captura as infos ANTES de desenhar (fastfetch sem logo proprio)
+mapfile -t INFO < <(fastfetch --logo-type none --pipe false 2>/dev/null)
+
+# limpa tela + scrollback e remove imagens antigas
+printf '\033[2J\033[3J\033[H'
+kitten icat --clear >/dev/null 2>&1
+
+# desenha o gif no retangulo topo-esquerdo, animando pra sempre
+kitten icat --loop=-1 --align left --place "${W}x${H}@0x0" "$GIF"
+
+# imprime cada linha de info a direita da imagem, comecando na linha 1
+C=$(( W + GAP + 1 ))
+r=1
+for line in "${INFO[@]}"; do
+    printf '\033[%d;%dH%s' "$r" "$C" "$line"
+    r=$(( r + 1 ))
+done
+
+# estaciona o cursor abaixo do bloco mais alto (imagem ou texto)
+n=${#INFO[@]}
+bottom=$(( H > n ? H : n ))
+printf '\033[%d;1H\n' "$(( bottom + 1 ))"

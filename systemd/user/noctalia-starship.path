@@ -1,0 +1,10 @@
+[Unit]
+Description=Observa colors.json do Noctalia e atualiza o prompt Starship
+
+[Path]
+# Dispara quando o Noctalia reescreve o tema do Kitty (troca de wallpaper)
+PathChanged=%h/.config/kitty/themes/noctalia.conf
+Unit=noctalia-starship.service
+
+[Install]
+WantedBy=default.target

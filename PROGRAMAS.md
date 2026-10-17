@@ -36,6 +36,9 @@ Escolhendo "Niri" no instalador, o pacote `cachyos-niri-noctalia` já traz:
 | Docker | `docker` | repo | |
 | Seahorse | `seahorse` | repo | keyring sem senha, ver `AUTOLOGIN.md` |
 | LocalSend | `localsend` | repo | mandar arquivo entre PC e celular |
+| nirimod | `nirimod-git` | AUR | configurações do niri por interface |
+| pacseek | `pacseek` | AUR | busca de pacotes (repo e AUR) no terminal |
+| Omacalc | binário em `extras/omacalc/` | Omarchy | calculadora; precisa do `qt6-declarative` |
 
 ## Usados pelo config do niri
 
@@ -66,12 +69,14 @@ Vários atalhos chamam scripts de `~/.local/bin` que não estão neste repo: `ch
 Um comando por bloco.
 
 ```sh
-sudo pacman -S kitty ghostty sushi loupe mpv bitwarden discord vesktop-bin godot nodejs pnpm docker seahorse localsend udiskie gammastep gpu-screen-recorder mpvpaper swayidle papirus-icon-theme ripgrep fd jq github-cli btop micro just fastfetch
+sudo pacman -S kitty ghostty sushi loupe mpv bitwarden discord vesktop-bin godot nodejs pnpm docker seahorse localsend udiskie gammastep gpu-screen-recorder mpvpaper swayidle papirus-icon-theme qt6-declarative ripgrep fd jq github-cli btop micro just fastfetch
 ```
 
 ```sh
-yay -S google-chrome fluxer-canary-bin visual-studio-code-bin flutter-bin android-studio papirus-folders bibata-cursor-theme-bin
+yay -S google-chrome fluxer-canary-bin visual-studio-code-bin flutter-bin android-studio papirus-folders bibata-cursor-theme-bin nirimod-git pacseek
 ```
+
+Para instalar no notebook, siga o `INSTALL.md`: ele tem o script com fallbacks e o que muda em relação ao desktop.
 
 ```sh
 flatpak install flathub app.zen_browser.zen com.ktechpit.whatsie org.gnome.gitlab.somas.Apostrophe

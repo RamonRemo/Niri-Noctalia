@@ -1,0 +1,23 @@
+#!/bin/sh
+# Liga/desliga o "modo flutuante" no monitor sob foco.
+#
+# Grava o nome do output no arquivo de estado que o niri-float-daemon le. Apertar
+# de novo no mesmo monitor desliga. Cada monitor e independente.
+
+STATE="${XDG_RUNTIME_DIR:-/tmp}/niri-float-outputs"
+
+out=$(niri msg --json focused-output | jq -r '.name // empty')
+[ -n "$out" ] || exit 0
+
+touch "$STATE"
+
+if grep -qxF "$out" "$STATE"; then
+    # Ja ativo -> remove a linha (desliga)
+    grep -vxF "$out" "$STATE" > "$STATE.tmp"
+    mv "$STATE.tmp" "$STATE"
+    notify-send "Janelas flutuantes" "Desativado no $out"
+else
+    # Inativo -> adiciona (liga)
+    echo "$out" >> "$STATE"
+    notify-send "Janelas flutuantes" "Ativado no $out"
+fi

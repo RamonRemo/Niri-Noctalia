@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+# Faz a cor das pastas do Papirus-Dark seguir o acento do noctalia (derivado do
+# wallpaper). Na noctalia 5 o acento vem do template GTK, regenerado a cada troca
+# de cor (~/.config/gtk-4.0/noctalia.css, chave accent_color); aqui a gente le
+# esse acento, acha o preset de cor de pasta do Papirus mais proximo, e aplica
+# via papirus-folders.
+#
+# Disparo: hook colors_changed do noctalia 5 (settings.toml [hooks]). O modo
+# 'watch' (polling) segue como fallback. Na 4.x a fonte era o colors.json (mPrimary),
+# que a 5 nao escreve mais.
+#
+# O Papirus-Dark fica em /usr/share/icons (root), entao papirus-folders precisa de
+# sudo. Requer uma regra NOPASSWD (ver /etc/sudoers.d/papirus-folders).
+#
+# Uso:
+#   noctalia-papirus-folders apply    # aplica uma vez, agora
+#   noctalia-papirus-folders watch    # vigia o gtk css e aplica a cada mudanca
+
+import colorsys
+import re
+import subprocess
+import sys
+import time
+import zlib
+from pathlib import Path
+
+# Fonte do acento na noctalia 5: o template GTK regenera estes arquivos a cada
+# troca de cor. gtk-4.0 primeiro (Nautilus e' GTK4), gtk-3.0 de fallback.
+ACCENT_SOURCES = [
+    Path.home() / ".config/gtk-4.0/noctalia.css",
+    Path.home() / ".config/gtk-3.0/noctalia.css",
+]
+THEME = "Papirus-Dark"
+
+# Cor real (fill) de cada preset de pasta do Papirus, extraida dos SVGs.
+PRESETS = {
+    "red": "#bf4b4b", "deeporange": "#e95420", "orange": "#dd772f",
+    "brown": "#957552", "yellow": "#e19d00", "green": "#60924b",
+    "teal": "#12806a", "cyan": "#0096aa", "darkcyan": "#35818a",
+    "blue": "#4877b1", "nordic": "#5e81ac", "indigo": "#3f51b5",
+    "violet": "#5d399b", "magenta": "#b259b8", "pink": "#ec407a",
+    "yaru": "#973552", "carmine": "#7a0002", "bluegrey": "#4d646f",
+    "breeze": "#147eb8", "adwaita": "#3a87e5", "grey": "#727272",
+}
+
+
+def _rgb(h):
+    h = h.lstrip("#")
+    return tuple(int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
+
+
+def _hue_dist(a, b):
+    d = abs(a - b) % 1.0
+    return min(d, 1 - d)
+
+
+def nearest_preset(accent_hex):
+    ah, as_, av = colorsys.rgb_to_hsv(*_rgb(accent_hex))
+    best = None
+    for name, hexv in PRESETS.items():
+        h, s, v = colorsys.rgb_to_hsv(*_rgb(hexv))
+        if as_ < 0.15:
+            score = 0 if name == "grey" else 9
+        else:
+            if name == "grey":
+                continue
+            score = _hue_dist(ah, h) * 3.0 + abs(as_ - s) * 0.6 + abs(av - v) * 0.5
+        if best is None or score < best[0]:
+            best = (score, name)
+    return best[1]
+
+
+def _accent_source():
+    for src in ACCENT_SOURCES:
+        if src.exists():
+            return src
+    return ACCENT_SOURCES[0]
+
+
+def read_accent():
+    for src in ACCENT_SOURCES:
+        try:
+            m = re.search(
+                r"@define-color\s+accent_color\s+(#[0-9a-fA-F]{6})",
+                src.read_text(),
+            )
+            if m:
+                return m.group(1)
+        except FileNotFoundError:
+            continue
+    raise RuntimeError("accent_color nao encontrado nos noctalia.css do GTK "
+                       "(o template gtk esta habilitado no settings.toml?)")
+
+
+def apply_once():
+    accent = read_accent()
+    color = nearest_preset(accent)
+    r = subprocess.run(
+        ["sudo", "-n", "papirus-folders", "-C", color, "-t", THEME, "-u"],
+        capture_output=True, text=True,
+    )
+    ok = r.returncode == 0
+    print(f"[papirus-folders] acento {accent} -> {color} "
+          f"({'ok' if ok else 'FALHOU: ' + (r.stderr.strip() or 'sudo?')})")
+    return ok
+
+
+def watch():
+    last = None
+    while True:
+        try:
+            cur = zlib.crc32(_accent_source().read_bytes())
+            if cur != last:
+                last = cur
+                apply_once()
+        except FileNotFoundError:
+            pass
+        time.sleep(2)
+
+
+if __name__ == "__main__":
+    mode = sys.argv[1] if len(sys.argv) > 1 else "apply"
+    if mode == "watch":
+        watch()
+    else:
+        sys.exit(0 if apply_once() else 1)

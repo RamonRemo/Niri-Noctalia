@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+"""Gera ~/.config/starship.toml a partir do tema VIVO do Kitty gerado pelo Noctalia.
+Fonte: ~/.config/kitty/themes/noctalia.conf  (reescrito pelo Noctalia na troca de wallpaper).
+Disparado pela unidade systemd path (noctalia-starship.path) que observa esse arquivo.
+"""
+import os
+import re
+import sys
+
+HOME = os.path.expanduser("~")
+SRC = os.path.join(HOME, ".config/kitty/themes/noctalia.conf")
+OUT = os.path.join(HOME, ".config/starship.toml")
+
+
+def parse_kitty(path):
+    """Le 'chave  #valor' do tema do Kitty."""
+    colors = {}
+    with open(path) as f:
+        for line in f:
+            m = re.match(r"^\s*([A-Za-z0-9_]+)\s+(#[0-9A-Fa-f]{6})\s*$", line)
+            if m:
+                colors[m.group(1)] = m.group(2).lower()
+    return colors
+
+
+def blend(a, b, t):
+    """Mistura dois hex (#rrggbb) por t em [0,1]."""
+    ai = [int(a[i:i + 2], 16) for i in (1, 3, 5)]
+    bi = [int(b[i:i + 2], 16) for i in (1, 3, 5)]
+    mix = [round(ai[i] + (bi[i] - ai[i]) * t) for i in range(3)]
+    return "#{:02x}{:02x}{:02x}".format(*mix)
+
+
+def main():
+    c = parse_kitty(SRC)
+
+    def get(k, fb):
+        return c.get(k, fb)
+
+    bg = get("background", "#151311")
+    fg = get("foreground", "#e7e1dd")
+    accent = get("active_tab_background", get("color4", "#d8c49d"))
+    on_accent = get("active_tab_foreground", bg)
+    s1 = get("color0", "#4c463c")          # git
+    os_bg = get("color8", s1)              # OS
+    text_dim = get("inactive_tab_foreground", fg)
+
+    pal = {
+        "accent": accent,
+        "on_accent": on_accent,
+        "os_bg": os_bg,
+        "on_os": bg,
+        "s1": s1,
+        "s2": blend(s1, bg, 0.5),          # degrade intermediario (linguagens)
+        "s3": bg,                          # hora (mais escuro)
+        "text": fg,
+        "text_dim": text_dim,
+        "err": get("color1", "#ffb4ab"),
+    }
+
+    toml = f'''"$schema" = 'https://starship.rs/config-schema.json'
+
+# Gerado por noctalia-starship a partir de {SRC}
+# (nao edite a mao; ajuste o gerador em ~/.local/bin/noctalia-starship).
+palette = "noctalia"
+
+[palettes.noctalia]
+accent = "{pal['accent']}"
+on_accent = "{pal['on_accent']}"
+os_bg = "{pal['os_bg']}"
+on_os = "{pal['on_os']}"
+s1 = "{pal['s1']}"
+s2 = "{pal['s2']}"
+s3 = "{pal['s3']}"
+text = "{pal['text']}"
+text_dim = "{pal['text_dim']}"
+err = "{pal['err']}"
+
+format = """
+[░▒▓](os_bg)\\
+$os\\
+[](fg:os_bg bg:accent)\\
+$directory\\
+[](fg:accent bg:s1)\\
+$git_branch\\
+$git_status\\
+[](fg:s1 bg:s2)\\
+$nodejs\\
+$bun\\
+$rust\\
+$golang\\
+$php\\
+[](fg:s2 bg:s3)\\
+$time\\
+[](fg:s3)\\
+\\n$character"""
+
+[character]
+success_symbol = "[❯](bold accent)"
+error_symbol = "[❯](bold err)"
+
+[directory]
+style = "fg:on_accent bg:accent"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = " "
+"Pictures" = " "
+
+[git_branch]
+symbol = ""
+style = "bg:s1"
+format = '[[ $symbol $branch ](fg:text bg:s1)]($style)'
+
+[git_status]
+style = "bg:s1"
+format = '[[($all_status$ahead_behind )](fg:text bg:s1)]($style)'
+
+[nodejs]
+symbol = ""
+style = "bg:s2"
+format = '[[ $symbol ($version) ](fg:text_dim bg:s2)]($style)'
+
+[bun]
+symbol = ""
+style = "bg:s2"
+format = '[[ $symbol ($version) ](fg:text_dim bg:s2)]($style)'
+
+[rust]
+symbol = ""
+style = "bg:s2"
+format = '[[ $symbol ($version) ](fg:text_dim bg:s2)]($style)'
+
+[golang]
+symbol = ""
+style = "bg:s2"
+format = '[[ $symbol ($version) ](fg:text_dim bg:s2)]($style)'
+
+[php]
+symbol = ""
+style = "bg:s2"
+format = '[[ $symbol ($version) ](fg:text_dim bg:s2)]($style)'
+
+[time]
+disabled = false
+time_format = "%R"
+style = "bg:s3"
+format = '[[  $time ](fg:text_dim bg:s3)]($style)'
+
+[os]
+style = "bg:os_bg fg:on_os"
+format = "[ $symbol ]($style)"
+disabled = false
+
+[os.symbols]
+Arch = "󰣇"
+Manjaro = ""
+EndeavourOS = ""
+Linux = "󰌽"
+Macos = "󰀵"
+Windows = "󰍲"
+Ubuntu = "󰕈"
+Debian = "󰣚"
+Fedora = "󰣛"
+'''
+
+    tmp = OUT + ".tmp"
+    with open(tmp, "w") as f:
+        f.write(toml)
+    os.replace(tmp, OUT)
+    print(f"starship.toml gerado a partir de {SRC} (accent={pal['accent']})")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        print(f"erro: {e}", file=sys.stderr)
+        sys.exit(1)

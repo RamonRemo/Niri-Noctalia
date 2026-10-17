@@ -1,0 +1,52 @@
+#!/bin/sh
+# Recarrega a config do niri quando o noctalia regenera as cores do tema.
+#
+# O noctalia escreve ~/.config/niri/noctalia.kdl (template "niri" ligado em
+# Settings > Color Scheme > Templates) a cada troca de wallpaper/esquema, mas o
+# niri nao observa arquivos incluidos — so o config.kdl. E o hook
+# "colorGeneration" do noctalia nunca e chamado nessa versao do shell.
+# Entao aqui a gente vigia o arquivo e dispara o load-config-file na mao.
+#
+# O template tambem gera o bloco "recent-windows" (alt-tab nativo do niri) sem
+# binds, e o KDL do niri so aceita UM bloco recent-windows no total — nao da pra
+# declarar os binds em outro arquivo. Entao a cada regeneracao a gente reinjeta
+# os binds dentro do bloco antes de recarregar.
+
+FILE="$HOME/.config/niri/noctalia.kdl"
+INTERVAL=2
+
+# Reinjeta os binds do recent-windows se o template os apagou.
+inject_binds() {
+    grep -q 'next-window' "$FILE" && return 1
+    grep -q '^recent-windows {' "$FILE" || return 1
+    tmp=$(mktemp) || return 1
+    awk '
+        /^recent-windows \{$/ {
+            print
+            print "    binds {"
+            print "        Alt+Tab { next-window; }"
+            print "        Alt+Shift+Tab { previous-window; }"
+            print "    }"
+            print ""
+            next
+        }
+        { print }
+    ' "$FILE" >"$tmp" && mv "$tmp" "$FILE" && return 0
+    rm -f "$tmp"
+    return 1
+}
+
+last=""
+[ -f "$FILE" ] && last=$(cksum <"$FILE")
+
+while :; do
+    if [ -f "$FILE" ]; then
+        cur=$(cksum <"$FILE")
+        if [ "$cur" != "$last" ]; then
+            inject_binds
+            last=$(cksum <"$FILE")
+            niri msg action load-config-file >/dev/null 2>&1
+        fi
+    fi
+    sleep "$INTERVAL"
+done

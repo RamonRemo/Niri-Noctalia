@@ -1,0 +1,20 @@
+[
+  {
+    "type": "bookmark",
+    "glyph": "update",
+    "label": "Atualizar sistema",
+    "cmd": "yay -Syu --noconfirm; flatpak update -y; echo; echo '== fim - Enter pra fechar =='; read _",
+    "description": "Repositórios + AUR (yay) e Flatpak (flathub)",
+    "runInBackground": false,
+    "runInTerminal": true
+  },
+  {
+    "type": "bookmark",
+    "glyph": "restart_alt",
+    "label": "Reiniciar noctalia",
+    "cmd": "/home/remo/.local/bin/reiniciar-noctalia",
+    "description": "Mata e sobe o noctalia de novo (setsid, sobrevive ao painel)",
+    "runInBackground": true,
+    "runInTerminal": false
+  }
+]

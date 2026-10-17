@@ -1,0 +1,118 @@
+#!/usr/bin/env python3
+# Daemon do "modo flutuante por monitor".
+#
+# Escuta o event-stream do niri e, quando uma janela NOVA nasce num monitor que
+# esta marcado como ativo (pelo niri-float-toggle), move ela pra flutuante.
+#
+# Como o niri nao tem window-rule por output (issue niri-wm/niri#2600), essa e a
+# unica forma de "abrir flutuante so nesse monitor": reagir ao evento e mover.
+#
+# Estado: ${XDG_RUNTIME_DIR}/niri-float-outputs (um nome de output por linha).
+# E lido fresco a cada janela nova, entao o toggle vale na hora.
+
+import json
+import os
+import subprocess
+
+RUNTIME = os.environ.get("XDG_RUNTIME_DIR", "/tmp")
+STATE_FILE = os.path.join(RUNTIME, "niri-float-outputs")
+
+FLOAT_WIDTH = "1200"   # largura ao abrir flutuante (px fixo)
+FLOAT_HEIGHT = "1000"  # altura ao abrir flutuante (px fixo)
+
+
+def active_outputs():
+    try:
+        with open(STATE_FILE) as f:
+            return {line.strip() for line in f if line.strip()}
+    except FileNotFoundError:
+        return set()
+
+
+def make_floating(window_id):
+    subprocess.run(
+        ["niri", "msg", "action", "move-window-to-floating", "--id", str(window_id)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+
+def shrink_and_center(window_id):
+    # Encolhe pro tamanho definido e centraliza. Janelas de tamanho fixo (dialogs,
+    # auxiliares XWayland) tem size hints e o niri clampa o resize nelas.
+    for action, change in (
+        ("set-window-width", FLOAT_WIDTH),
+        ("set-window-height", FLOAT_HEIGHT),
+    ):
+        subprocess.run(
+            ["niri", "msg", "action", action, "--id", str(window_id), change],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    subprocess.run(
+        ["niri", "msg", "action", "center-window", "--id", str(window_id)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+
+def main():
+    ws2out = {}   # workspace_id -> output name
+    seen = set()  # ids de janelas ja conhecidas (nao mexer nelas)
+    seeded = False
+
+    proc = subprocess.Popen(
+        ["niri", "msg", "--json", "event-stream"],
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+
+    for line in proc.stdout:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        for kind, data in event.items():
+            if kind == "WorkspacesChanged":
+                ws2out = {
+                    ws["id"]: ws.get("output")
+                    for ws in data.get("workspaces", [])
+                }
+
+            elif kind == "WorkspaceActivated":
+                # nao muda o mapa ws->output; ignorado de proposito
+                pass
+
+            elif kind == "WindowsChanged":
+                # Snapshot inicial: semeia as janelas ja abertas pra nunca mexer
+                # nelas. Chega uma vez logo apos conectar.
+                for w in data.get("windows", []):
+                    seen.add(w["id"])
+                seeded = True
+
+            elif kind == "WindowOpenedOrChanged":
+                w = data.get("window", {})
+                wid = w.get("id")
+                if wid is None or not seeded:
+                    if wid is not None:
+                        seen.add(wid)
+                    continue
+                if wid in seen:
+                    continue
+                seen.add(wid)  # nova: registra e decide
+
+                out = ws2out.get(w.get("workspace_id"))
+                if out and out in active_outputs() and not w.get("is_floating"):
+                    make_floating(wid)
+                    shrink_and_center(wid)
+
+            elif kind == "WindowClosed":
+                seen.discard(data.get("id"))
+
+
+if __name__ == "__main__":
+    main()

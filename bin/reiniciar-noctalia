@@ -1,0 +1,5 @@
+#!/bin/sh
+# Reinicia o noctalia: mata a instância atual e sobe outra já destacada
+# (setsid) da árvore de processos do painel que disparou este script, senão
+# a nova instância morreria junto com o terminal/bookmark que a lançou.
+setsid -f sh -c 'pkill -x noctalia; sleep 1; exec noctalia' >/dev/null 2>&1

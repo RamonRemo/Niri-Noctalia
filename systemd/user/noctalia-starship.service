@@ -1,0 +1,9 @@
+[Unit]
+Description=Regenera starship.toml a partir das cores do Noctalia (wallpaper)
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/noctalia-starship
+# Forca os fish abertos a redesenhar o prompt (releem o starship.toml novo).
+# '-' ignora falha caso nenhum fish esteja rodando.
+ExecStartPost=-/usr/bin/pkill -WINCH -x fish
