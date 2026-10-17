@@ -1,33 +1,91 @@
     window-rule {
-        geometry-corner-radius 20 // Set every window radius to 20
-        clip-to-geometry true
-    }
+    geometry-corner-radius 20 // Set every window radius to 20
+    clip-to-geometry true
+}
 
      // if you use steam you will probably like these
     window-rule {
         match app-id="steam"
-        exclude title=r#"^[Ss]team$"#
+        exclude title=r"^[Ss]team$"
         open-floating true
-    }
+}
 
     window-rule {
-       match app-id="steam" title=r#"^notificationtoasts_\d+_desktop$"#
+       match app-id="steam" title=r"^notificationtoasts_\d+_desktop$"
        default-floating-position x=10 y=10 relative-to="bottom-right"
        open-focused false
-    }
+}
 
     // apps que abrem sempre flutuando
     window-rule {
-        match app-id=r#"^org\.gnome\.Loupe$"#
+        match app-id=r"^org\.gnome\.Loupe$"
         open-floating true
         default-column-width { proportion 0.5; }
         default-window-height { proportion 0.8; }
-    }
+}
 
     window-rule {
-        match app-id=r#"^org\.gnome\.gitlab\.somas\.Apostrophe$"#
+        match app-id=r"^org\.gnome\.gitlab\.somas\.Apostrophe$"
         open-floating true
-    }
+}
+
+    // Sushi (Espaço no Nautilus, tipo Quick Look): flutua centralizado. Sem
+    // tamanho chumbado porque o Sushi redimensiona a janela pelo conteúdo.
+    window-rule {
+        match app-id=r"^org\.gnome\.NautilusPreviewer$"
+        open-floating true
+        max-width 766
+        max-height 706
+}
+
+    // OmaCalc (~/.local/bin/omacalc): abre sempre flutuando e no tamanho fixo
+    // que o Remo deixou (300x489). Diferente do gnome-calculator, não pede um
+    // size hint variável por modo, então chumbar aqui não atrapalha.
+    window-rule {
+        match app-id=r"^omacalc$"
+        open-floating true
+        default-column-width { fixed 300; }
+        default-window-height { fixed 489; }
+}
+
+    // Speed Test (netgraph): kitty com --class netgraph, TUI em curses. Flutua
+    // (centralizada por padrão pelo niri). Sem tamanho chumbado em px porque a
+    // janela é dimensionada em células pelo próprio kitty (100c x 30 linhas),
+    // que varia com a fonte.
+    window-rule {
+        match app-id=r"^netgraph$"
+        open-floating true
+}
+
+    // Lembrete (omarchy-reminder -i): kitty com --class omarchy-reminder, um
+    // prompt curtinho (minutos + mensagem) que agenda um systemd-run --user.
+    // Flutua; tamanho em células pelo kitty (54c x 7).
+    window-rule {
+        match app-id=r"^omarchy-reminder$"
+        open-floating true
+}
+
+    // Prompt do chrome-janela: kitty com --class chrome-janela, uma linha só
+    // (URL ou busca). Flutua; tamanho em células pelo próprio kitty (64c x 4).
+    window-rule {
+        match app-id=r"^chrome-janela$"
+        open-floating true
+}
+
+    // gravatui: kitty com --class gravatui, TUI em curses do grava-tela. Igual ao
+    // netgraph — flutua e o próprio kitty define o tamanho (455x385 px, no
+    // initial_window_width/height do .desktop), então nada de px chumbado aqui.
+    window-rule {
+        match app-id=r"^gravatui$"
+        open-floating true
+}
+
+    // screensaver-tui: kitty com --class screensaver-tui (~/Projetos/screensaver-oled),
+    // mesmo esquema do gravatui: flutua e o kitty define o tamanho em células.
+    window-rule {
+        match app-id=r"^screensaver-tui$"
+        open-floating true
+}
 
     // Emulador do Android: Qt em XWayland, abre 2+ janelas com o mesmo app-id
     // (device, barra de controles, extended controls), distinguíveis pelo título.
@@ -40,20 +98,30 @@
     // .android/avd/<nome>.avd/emulator-user.ini; chumbar aqui quebraria tablet,
     // foldable, Wear OS redondo etc.
     window-rule {
-        match app-id=r#"^Emulator$"# title=r#"^Android Emulator"#
+        match app-id=r"^Emulator$" title=r"^Android Emulator"
         open-floating false
-    }
+}
 
     // As auxiliares flutuam: são de tamanho fixo e se posicionam em coordenada
     // X11, que atravessa os dois monitores. Flutuando ficam presas ao workspace
     // onde nasceram, o que corta o vazamento pra outra tela.
     window-rule {
-        match app-id=r#"^Emulator$"#
-        exclude title=r#"^Android Emulator"#
+        match app-id=r"^Emulator$"
+        exclude title=r"^Android Emulator"
         open-floating true
-    }
+}
+
+    // Jogo do Godot rodando pelo editor: a janela do jogo e a do editor
+    // compartilham o app-id "Godot", então distinguir pelo título. A janela do
+    // jogo em execução termina em "(DEBUG)" (ex.: "Legacy of the ancient Questor
+    // (DEBUG)"); a do editor termina em "- Godot Engine". Casa case-insensitive
+    // pra sobreviver a renomeação do projeto e à capitalização.
+    window-rule {
+        match app-id=r"^Godot$" title=r"(?i)\(debug\)"
+        open-floating true
+}
 
     layer-rule {
         match namespace="^noctalia-wallpaper*"
         place-within-backdrop true
-    }
+}

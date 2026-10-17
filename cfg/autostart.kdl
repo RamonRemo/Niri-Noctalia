@@ -1,13 +1,27 @@
 // ────────────── Startup Applications ──────────────
 // https://github.com/YaLTeR/niri/wiki/Configuration:-Miscellaneous#spawn-sh-at-startup
 
-    spawn-sh-at-startup "qs -c noctalia-shell"
+    // noctalia 5 (binario nativo). A shell antiga era: qs -c noctalia-shell
+    // Pra reverter tudo de uma vez: ~/.local/bin/noctalia-v5-rollback
+    spawn-at-startup "noctalia"
 
     // Trava a tela assim que o shell do noctalia responder ao IPC.
-    // Tentativas limitadas (~30s) pra nao ficar em loop se o qs nao subir.
-    spawn-sh-at-startup "for i in $(seq 60); do qs -c noctalia-shell ipc call lockScreen lock && break; sleep 0.5; done"
-    spawn-sh-at-startup "niri msg action focus-monitor DP-2"
+    // Tentativas limitadas (~30s) pra nao ficar em loop se a shell nao subir.
+    spawn-sh-at-startup "for i in $(seq 60); do noctalia msg session lock && break; sleep 0.5; done"
+    spawn-sh-at-startup "niri msg action focus-monitor DP-1"
     spawn-sh-at-startup "udiskie --automount --notify --no-tray"
 
     // Recarrega a config quando o noctalia regenera as cores (noctalia.kdl).
     spawn-at-startup "/home/remo/.local/bin/niri-noctalia-reload"
+
+    // Cor das pastas do Papirus segue o acento: agora via hook da noctalia 5
+    // (settings.toml [hooks] colors_changed/started). O watcher antigo (polling
+    // do colors.json da 4.x) foi aposentado - linha desativada com /- abaixo.
+    /- spawn-at-startup "/home/remo/.local/bin/noctalia-papirus-folders" "watch"
+
+    // Modo "janelas flutuantes por monitor" (atalho Mod+Shift+T).
+    spawn-at-startup "/home/remo/.local/bin/niri-float-daemon"
+
+    // Preview do Sushi (Espaço no Nautilus) sempre centralizado: recentra a
+    // cada mudança de tamanho. Limite de tamanho fica em rules.kdl.
+    spawn-at-startup "/home/remo/.local/bin/niri-sushi-center"

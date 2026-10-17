@@ -3,16 +3,28 @@
 // You will have to remove "/-" and edit it before it takes effect.
 // https://github.com/YaLTeR/niri/wiki/Configuration:-Outputs
 
-// Monitor menor (2560x1080), fica em cima fisicamente
-output "HDMI-A-1" {
-    mode "2560x1080@60.000"
+// No niri o y=0 e o TOPO e cresce pra baixo. Os dois com x=0 = alinhados
+// exatamente na vertical (bordas esquerdas coladas), sem passagem torta do mouse.
+
+// OLED (SMARTGAME+), agora no DP-1. E o "principal", fica embaixo fisicamente.
+// Suporta 240Hz - antes ficava preso em 160 porque o cabo estava no DP-2.
+output "DP-1" {
+    mode "3440x1440@240.085"
+    scale 1
+    position x=0 y=1440
+}
+
+// ULTRAWIDE (3440x1440, 160Hz), agora no DP-2. Fica em cima.
+output "DP-2" {
+    mode "3440x1440@159.962"
     scale 1
     position x=0 y=0
 }
 
-// Monitor maior (3440x1440, 160Hz) — o "principal", fica embaixo fisicamente
-output "DP-2" {
-    mode "3440x1440@159.962"
+// Fallback: se voltar a ligar o monitor de cima pelo HDMI (limitado a 85Hz),
+// ele assume a mesma posicao de cima. Nao colide porque so um conecta por vez.
+output "HDMI-A-1" {
+    mode "3440x1440@84.957"
     scale 1
-    position x=0 y=1080
+    position x=0 y=0
 }

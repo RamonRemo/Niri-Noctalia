@@ -9,44 +9,79 @@ binds {
     Mod+Shift+ESCAPE                     { show-hotkey-overlay; }
 
     // ─── Applications ───
-    Mod+Return                          hotkey-overlay-title="Open Terminal: Alacritty" { spawn "alacritty"; }
-    ALT+Space                           hotkey-overlay-title="Open App Launcher: noctalia launcher" { spawn-sh "qs -c noctalia-shell ipc call launcher toggle"; }
-    Mod+CTRL+Return                     hotkey-overlay-title="Open App Launcher: noctalia launcher" { spawn-sh "qs -c noctalia-shell ipc call launcher toggle"; }
-    Mod+B                               hotkey-overlay-title="Open Browser: Zen" { spawn "flatpak" "run" "app.zen_browser.zen"; }
-    Mod+ALT+L                           hotkey-overlay-title="Lock Screen: noctalia lock" { spawn-sh "qs -c noctalia-shell ipc call lockScreen lock"; }
-    Mod+Shift+Q                        hotkey-overlay-title="Session Menu: noctalia sessionMenu" { spawn-sh "qs -c noctalia-shell ipc call sessionMenu toggle"; }
-    // Historico da area de transferencia: abre o launcher ja no modo ">clip ".
-    // O backend e o cliphist; o noctalia so le/escreve nele.
-    Mod+V                               hotkey-overlay-title="Historico do clipboard: noctalia launcher" { spawn-sh "qs -c noctalia-shell ipc call launcher clipboard"; }
+    Mod+Return hotkey-overlay-title="Open Terminal: kitty" { spawn "kitty"; }
+    // Mesmo terminal pelo Enter do teclado numerico. Escondido do overlay pra nao duplicar a linha de cima.
+    Mod+KP_Enter hotkey-overlay-title=null { spawn "kitty"; }
+    ALT+Space hotkey-overlay-title="Open App Launcher: noctalia launcher" { spawn-sh "noctalia msg panel-toggle launcher"; }
+    Mod+CTRL+Return hotkey-overlay-title="Open App Launcher: noctalia launcher" { spawn-sh "noctalia msg panel-toggle launcher"; }
+    Mod+B hotkey-overlay-title="Open Browser: Zen" { spawn "flatpak" "run" "app.zen_browser.zen"; }
+    Mod+Shift+B hotkey-overlay-title="WhatsApp: Whatsie" { spawn "flatpak" "run" "com.ktechpit.whatsie"; }
+
+    // ─── Chrome: uma janela por pagina, sem abas (teste de fluxo) ───
+    // Mod+G     janela normal - tem barra de URL e uma aba so.
+    // Mod+Shift+G  prompt curto e abre no modo --app: sem barra de URL, sem
+    //              tab strip. Mesma janela dos outros prompts (kitty).
+    // Os dois usam o perfil padrao do Chrome: a segunda janela anexa na
+    // instancia que ja roda em vez de subir outro processo browser.
+    Mod+G repeat=false hotkey-overlay-title="Chrome: janela nova" { spawn "/home/remo/.local/bin/chrome-janela"; }
+    Mod+Shift+G repeat=false hotkey-overlay-title="Chrome: janela sem abas (--app)" { spawn "kitty" "--class" "chrome-janela" "-T" "Nova janela do Chrome" "-o" "initial_window_width=64c" "-o" "initial_window_height=4c" "-o" "remember_window_size=no" "/home/remo/.local/bin/chrome-janela" "-i"; }
+
+    Mod+ALT+L hotkey-overlay-title="Lock Screen: noctalia lock" { spawn-sh "noctalia msg session lock"; }
+    Mod+Shift+Q hotkey-overlay-title="Session Menu: noctalia sessionMenu" { spawn-sh "noctalia msg panel-toggle session"; }
+    // Historico da area de transferencia: painel dedicado da noctalia 5 (o mesmo
+    // do icone da barra) - flutuante, com imagens, ate 100 itens. Melhor que o
+    // modo clipboard do launcher. Clipboard nativo da 5 (nao usa mais cliphist).
+    Mod+V hotkey-overlay-title="Historico do clipboard: noctalia" { spawn-sh "noctalia msg panel-toggle clipboard"; }
+
+    // Notas rapidas: painel do plugin simple-notes (o mesmo do icone de clipe na
+    // barra). O id interno do painel e 'noctalia/notes:panel' (nao 'simple-notes').
+    // Mod+A = Anotacoes; o N de Notes ja e a luz noturna.
+    Mod+A hotkey-overlay-title="Notas: noctalia simple-notes" { spawn-sh "noctalia msg panel-toggle noctalia/notes:panel"; }
 
     // Please choose your own file manager.
-    Mod+E                               hotkey-overlay-title="File Manager: Nautilus" { spawn "nautilus"; }
+    Mod+E hotkey-overlay-title="File Manager: Nautilus" { spawn "nautilus" "/home/remo/Área de trabalho"; }
 
-    // Wallpaper aleatorio, mesma imagem nos dois monitores.
-    // O 'refresh' antes do 'random' e obrigatorio: quando a pasta ganha
-    // imagens novas, a lista em cache do noctalia fica velha e o 'random'
-    // vira no-op silencioso (sai 0, nao muda nada, nao avisa).
-    // 'random' SEM argumento de tela aplica em todas as saidas de uma vez.
-    // Passar uma tela (ex: 'random DP-2') mexe so naquele monitor.
-    Mod+Shift+W                         repeat=false hotkey-overlay-title="Wallpaper aleatorio" { spawn-sh "qs -c noctalia-shell ipc call wallpaper refresh; sleep 0.4; qs -c noctalia-shell ipc call wallpaper random"; }
-    Scroll_Lock                         repeat=false hotkey-overlay-title="Wallpaper aleatorio (Scroll Lock)" { spawn-sh "qs -c noctalia-shell ipc call wallpaper refresh; sleep 0.4; qs -c noctalia-shell ipc call wallpaper random"; }
+    // Lembrete rapido: prompt flutuante (minutos + mensagem) que agenda um
+    // systemd-run --user e notifica pelo noctalia. Mesma janela do lancador.
+    Mod+F12 repeat=false hotkey-overlay-title="Novo lembrete" { spawn "kitty" "--class" "omarchy-reminder" "-T" "Lembrete" "-o" "initial_window_width=54c" "-o" "initial_window_height=7c" "-o" "remember_window_size=no" "/home/remo/.local/bin/omarchy-reminder" "-i"; }
+
+    // Wallpaper aleatorio. Na noctalia 5 'wallpaper-random' ja troca na hora
+    // (nao precisa mais do 'refresh' que a 4.x exigia). Sem connector aplica geral;
+    // com connector (ex: 'wallpaper-random DP-2') mexe so naquele monitor.
+    Mod+Shift+W repeat=false hotkey-overlay-title="Wallpaper aleatorio" { spawn-sh "noctalia msg wallpaper-random"; }
+    Scroll_Lock repeat=false hotkey-overlay-title="Wallpaper aleatorio (Scroll Lock)" { spawn-sh "noctalia msg wallpaper-random"; }
+
+    // ─── Luz noturna ───
+    // O botao da barra do noctalia usa wlsunset, que pega as DUAS telas.
+    // Estes atalhos usam gammastep, que sabe filtrar por saida.
+    // Os dois nao rodam juntos: so um cliente por vez segura o gamma de uma tela,
+    // entao o script desliga o do noctalia antes de subir.
+    // 2700K fixo. Sem esse argumento o script leria o nightTemp do noctalia,
+    // que esta mais fraco (3645K) e vale so pro botao da barra.
+    Mod+N repeat=false hotkey-overlay-title="Luz noturna: so no OLED (DP-1)" { spawn "/home/remo/.local/bin/nightlight-mono" "DP-1" "2700"; }
+    Mod+Shift+N repeat=false hotkey-overlay-title="Luz noturna: so no ULTRAWIDE (DP-2)" { spawn "/home/remo/.local/bin/nightlight-mono" "DP-2" "2700"; }
+
+    // Exercita pixels do OLED: pisca cores solidas em tela cheia (monitor com foco). Esc aborta.
+    Mod+Shift+O repeat=false hotkey-overlay-title="OLED: tela preta" { spawn "/home/remo/.local/bin/oled-refresh"; }
 
     // ─── Media Controls ───
-    XF86AudioRaiseVolume                allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call volume increase"; }
-    XF86AudioLowerVolume                allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call volume decrease"; }
-    XF86AudioMute                       allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call volume muteOutput"; }
+    // Alterna a saida padrao entre o fone Fuxi-H3 e o OLED, movendo os streams que ja tocam.
+    Mod+M repeat=false hotkey-overlay-title="Audio: alterna fone / OLED" { spawn "/home/remo/.local/bin/audio-toggle"; }
+    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "noctalia msg volume-up"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "noctalia msg volume-down"; }
+    XF86AudioMute allow-when-locked=true { spawn-sh "noctalia msg volume-mute"; }
     // O headset Fuxi-H3 muta no firmware: a tecla XF86AudioMicMute nao chega ate aqui,
     // entao notificar neste bind nao funciona. Quem avisa e o servico mic-guard.service,
     // que observa o estado real do PipeWire (e desmuta quando o headset reconecta mudo).
-    XF86AudioMicMute                    allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call volume muteInput"; }
-    XF86AudioNext                       allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call media next"; }
-    XF86AudioPrev                       allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call media previous"; }
-    XF86AudioPlay                       allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call media playPause"; }
-    XF86AudioPause                      allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call media playPause"; }
+    XF86AudioMicMute allow-when-locked=true { spawn-sh "noctalia msg mic-mute"; }
+    XF86AudioNext allow-when-locked=true { spawn-sh "noctalia msg media next"; }
+    XF86AudioPrev allow-when-locked=true { spawn-sh "noctalia msg media previous"; }
+    XF86AudioPlay allow-when-locked=true { spawn-sh "noctalia msg media toggle"; }
+    XF86AudioPause allow-when-locked=true { spawn-sh "noctalia msg media toggle"; }
 
     // ─── Brightness Controls ───
-    XF86MonBrightnessUp                 allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call brightness increase"; }
-    XF86MonBrightnessDown               allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call brightness decrease"; }
+    XF86MonBrightnessUp allow-when-locked=true { spawn-sh "noctalia msg brightness-up"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn-sh "noctalia msg brightness-down"; }
 
     // ─── Window Movement and Focus ───
     Mod+Q                               { close-window; }
@@ -59,6 +94,14 @@ binds {
     Mod+K                               { focus-window-up; }
     Mod+Down                            { focus-monitor-down; }
     Mod+J                               { focus-window-down; }
+
+    // Botoes laterais do mouse: Back vai pra direita, Forward vai pra esquerda.
+    // Vinculados sem modificador, entao o niri captura eles globalmente
+    // e apps deixam de receber voltar/avancar (navegador, gerenciador de arquivos).
+    // Desativado pra usar os botoes extras dentro de um jogo. Reative se quiser
+    // navegar entre colunas com eles de novo.
+    // MouseBack                           { focus-column-right; }
+    // MouseForward                        { focus-column-left; }
 
     Mod+CTRL+Left                       { move-column-left; }
     Mod+CTRL+H                          { move-column-left; }
@@ -77,6 +120,9 @@ binds {
 
     Mod+Home                            { focus-column-first; }
     Mod+End                             { focus-column-last; }
+    // Mesmo que Home/End acima, nas setas: esquerda vai pro comeco da faixa, direita pro fim.
+    Mod+ALT+Left                        { focus-column-first; }
+    Mod+ALT+Right                       { focus-column-last; }
     Mod+CTRL+Home                       { move-column-to-first; }
     Mod+CTRL+End                        { move-column-to-last; }
 
@@ -91,10 +137,10 @@ binds {
     Mod+Shift+CTRL+Down                 { move-column-to-monitor-down; }
 
     // ─── Workspace Switching ───
-    Mod+WheelScrollDown                 cooldown-ms=150 { focus-workspace-down; }
-    Mod+WheelScrollUp                   cooldown-ms=150 { focus-workspace-up; }
-    Mod+CTRL+WheelScrollDown            cooldown-ms=150 { move-column-to-workspace-down; }
-    Mod+CTRL+WheelScrollUp              cooldown-ms=150 { move-column-to-workspace-up; }
+    Mod+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
+    Mod+WheelScrollUp cooldown-ms=150 { focus-workspace-up; }
+    Mod+CTRL+WheelScrollDown cooldown-ms=150 { move-column-to-workspace-down; }
+    Mod+CTRL+WheelScrollUp cooldown-ms=150 { move-column-to-workspace-up; }
 
     Mod+WheelScrollRight                { focus-column-right; }
     Mod+WheelScrollLeft                 { focus-column-left; }
@@ -127,6 +173,7 @@ binds {
     Mod+CTRL+9                          { move-column-to-workspace 9; }
 
     Mod+TAB                             { focus-workspace-previous; }
+    Mod+Space                           repeat=false { toggle-overview; }
 
     // ─── Layout Controls ───
     Mod+CTRL+F                          { expand-column-to-available-width; }
@@ -139,13 +186,22 @@ binds {
 
     // ─── Modes ───
     Mod+T                               { toggle-window-floating; }
+    Mod+Shift+T repeat=false hotkey-overlay-title="Janelas flutuantes: modo por monitor" { spawn "/home/remo/.local/bin/niri-float-toggle"; }
     Mod+F                               { fullscreen-window; }
     Mod+W                               { toggle-column-tabbed-display; }
 
     // ─── Screenshots ───
-    Print                               { screenshot; }
+    // Print: editor de região do noctalia 5.1 - seleciona a região, depois escolhe salvar/copiar/anotar
+    // (pincel/formas/texto/blur). Exige "Edit Before Saving or Copying" ligado em Settings > Screenshot > Annotation.
+    // E o swash (mesmo autor ItsLemmy) portado pro shell.
+    Print hotkey-overlay-title="Captura de região + anotar: noctalia" { spawn-sh "noctalia msg screenshot-region"; }
+    // Ctrl+Print: screenshot nativo do niri (região, salva direto, sem editor).
+    Ctrl+Print                          { screenshot; }
     Shift+Print                         { screenshot-screen; }
     Alt+Print                           { screenshot-window; }
+
+    // GUI da gravação de tela (grava-tui) num kitty pequeno e flutuante
+    Mod+Print hotkey-overlay-title="Gravar tela: grava-tui" { spawn "kitty" "--class" "gravatui" "-o" "initial_window_width=48c" "-o" "initial_window_height=20c" "-o" "remember_window_size=no" "-e" "grava-tui"; }
 
     // Atalhos alternativos (mantidos)
     CTRL+Shift+1                        { screenshot; }
@@ -155,11 +211,12 @@ binds {
     // ─── Emergency Escape Key ───
     // Use this when a fullscreen app blocks your keybinds.
     // It disables any active keyboard shortcut inhibitor, restoring control.
-    Mod+ESCAPE                          allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+    Mod+ESCAPE allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
 
     // ─── Exit / Power ───
-    CTRL+ALT+Delete                     { quit; } // Also quits Niri
-    Mod+Shift+P                         { power-off-monitors; } // Turn off screens (useful for OLED or privacy)
-    Mod+O                               repeat=false { toggle-overview; }
-    Mod+Space                           repeat=false { toggle-overview; }
+    CTRL+ALT+Delete                     { quit; }
+ // Also quits Niri
+    Mod+Shift+P                         { power-off-monitors; }
+ // Turn off screens (useful for OLED or privacy)
+    Mod+O repeat=false { toggle-overview; }
 }
